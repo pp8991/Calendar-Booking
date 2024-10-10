@@ -1,0 +1,46 @@
+package com.calendar.booking.impl;
+
+import com.calendar.booking.dao.TimeSlotDAO;
+import com.calendar.booking.data.TimeSlot;
+import com.calendar.booking.repository.TimeSlotRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+
+@Component
+@Slf4j
+public class TimeSlotDAOImpl implements TimeSlotDAO {
+
+    @Autowired
+    private TimeSlotRepository timeSlotRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    public List<TimeSlot> findAll() {
+        TypedQuery<TimeSlot> query = entityManager.createQuery("SELECT t FROM TimeSlot t", TimeSlot.class);
+        return query.getResultList();
+    }
+
+    @Override
+    public Optional<TimeSlot> findById(String id) {
+        return timeSlotRepository.findById(id);
+    }
+
+    @Override
+    public TimeSlot save(TimeSlot timeSlot) {
+        return timeSlotRepository.save(timeSlot);
+    }
+
+    @Override
+    public void deleteById(String id) {
+       timeSlotRepository.deleteById(id);
+    }
+}
