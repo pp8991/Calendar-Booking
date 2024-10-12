@@ -34,3 +34,7 @@ Make sure to have the following installed:
 ### 1. Running Locally without Docker
 
 To run the application locally, ensure that you have MySQL running on your local machine. Update the `application.properties` file with the correct database credentials.
+
+## Swagger EndPoint
+
+http://localhost:8080/api/v1/swagger-ui/index.html#
