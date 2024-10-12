@@ -4,6 +4,7 @@ import com.calendar.booking.dao.AvailabilityDAO;
 import com.calendar.booking.data.Availability;
 import com.calendar.booking.repository.AvailabilityRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +48,19 @@ public class AvailabilityDAOImpl implements AvailabilityDAO {
         TypedQuery<Availability> query = entityManager.createQuery("SELECT a FROM Availability a WHERE a.owner.id = :ownerId", Availability.class);
         query.setParameter("ownerId", ownerId);
         return query.getResultList();
+    }
+
+    @Override
+    public void update(String id, Availability availability) {
+        Optional<Availability> existingAvailabilityOpt = availabilityRepository.findById(id);
+        if (existingAvailabilityOpt.isPresent()) {
+            Availability existingAvailability = existingAvailabilityOpt.get();
+            existingAvailability.setDayOfWeek(availability.getDayOfWeek());
+            existingAvailability.setStartTime(availability.getStartTime());
+            existingAvailability.setEndTime(availability.getEndTime());
+            availabilityRepository.save(existingAvailability);
+        } else {
+            throw new EntityNotFoundException("Availability with id " + id + " not found");
+        }
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AppointmentService {
@@ -19,6 +20,9 @@ public class AppointmentService {
 
     @Autowired
     private TimeSlotService timeSlotService;
+
+    @Autowired
+    private UserService userService;
 
     @Transactional
     public List<Appointment> getAppointmentsForOwner(String ownerId) {
@@ -32,31 +36,37 @@ public class AppointmentService {
 
     @Transactional
     public Appointment bookAppointment(String inviteeId, String timeSlotId) {
-        TimeSlot timeSlot = timeSlotService.findTimeSlotById(timeSlotId);
-
-        if (timeSlot == null || timeSlot.isBooked()) {
+        Optional<TimeSlot> timeSlot1 = timeSlotService.findTimeSlotById(timeSlotId);
+        if (!timeSlot1.isPresent()) throw new RuntimeException("Invalid Time Slot Id");
+        TimeSlot timeSlot = timeSlot1.get();
+        if (timeSlot.isBooked()) {
             throw new RuntimeException("Time slot is not available.");
         }
 
         timeSlotService.markTimeSlotAsBooked(timeSlotId);
 
+        Optional<User> invitee = userService.findById(inviteeId);
+        if (!invitee.isPresent()) {
+            throw new RuntimeException("Invitee not found.");
+        }
+
         // Create and save the appointment
         Appointment appointment = new Appointment();
-        appointment.setInvitee(new User(inviteeId));
+        appointment.setInvitee(invitee.get());
         appointment.setTimeSlot(timeSlot);
         appointment.setCreatedAt(LocalDate.now().atStartOfDay());
         return appointmentDAO.save(appointment);
     }
 
     @Transactional
-    public void cancelAppointment(int appointmentId) {
-        Appointment appointment = appointmentDAO.findById(appointmentId);
-        if (appointment == null) {
+    public void cancelAppointment(String appointmentId) {
+        Optional<Appointment> appointment = appointmentDAO.findById(appointmentId);
+        if (!appointment.isPresent()) {
             throw new RuntimeException("Appointment not found.");
         }
 
         // Free the associated time slot
-        TimeSlot timeSlot = appointment.getTimeSlot();
+        TimeSlot timeSlot = appointment.get().getTimeSlot();
         timeSlotService.unmarkTimeSlotAsBooked(timeSlot.getId());
 
         // Delete the appointment

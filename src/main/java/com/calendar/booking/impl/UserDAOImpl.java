@@ -45,9 +45,6 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void deleteById(String id) {
-        User user = findById(id);
-        if (user != null) {
-            entityManager.remove(user);
-        }
+        userRepository.deleteById(id);
     }
 }

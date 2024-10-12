@@ -1,11 +1,11 @@
 package com.calendar.booking.service;
 
-import com.calendar.booking.dao.TimeSlotDAO;
 import com.calendar.booking.data.Appointment;
 import com.calendar.booking.data.Availability;
 import com.calendar.booking.data.TimeSlot;
 import com.calendar.booking.data.User;
 import com.calendar.booking.impl.AppointmentDAOImpl;
+import com.calendar.booking.impl.TimeSlotDAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class TimeSlotService {
 
     @Autowired
-    private TimeSlotDAO timeSlotDAO;
+    private TimeSlotDAOImpl timeSlotDAO;
 
     @Autowired
     private AvailabilityService availabilityService;
@@ -88,10 +88,19 @@ public class TimeSlotService {
         timeSlotDAO.save(timeSlot.get());
     }
 
-    public TimeSlot findTimeSlotById(String timeSlotId) {
+
+    public Optional<TimeSlot> findTimeSlotById(String timeSlotId) {
+        return timeSlotDAO.findById(timeSlotId);
     }
 
     public void unmarkTimeSlotAsBooked(String id) {
+        Optional<TimeSlot> timeSlot = timeSlotDAO.findById(id);
+        if (timeSlot.isPresent() && timeSlot.get().isBooked()) {
+            timeSlot.get().setBooked(false);
+            timeSlotDAO.save(timeSlot.get());
+        } else {
+            throw new RuntimeException("TimeSlot not found or is not booked");
+        }
     }
 }
 

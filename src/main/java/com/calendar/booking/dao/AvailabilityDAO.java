@@ -11,4 +11,6 @@ public interface AvailabilityDAO {
     Availability save(Availability availability);
     void deleteById(String id);
     List<Availability> findByOwnerId(String ownerId);
+
+    void update(String id, Availability availability);
 }

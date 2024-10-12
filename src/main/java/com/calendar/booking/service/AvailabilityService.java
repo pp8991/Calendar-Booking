@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AvailabilityService {
@@ -18,7 +19,7 @@ public class AvailabilityService {
         return availabilityDAO.findAll();
     }
 
-    public Availability getAvailabilityById(String id) {
+    public Optional<Availability> getAvailabilityById(String id) {
         return availabilityDAO.findById(id);
     }
 
@@ -33,12 +34,8 @@ public class AvailabilityService {
     }
 
     @Transactional
-    public Availability updateAvailability(String id, Availability availability) {
-        Availability existingAvailability = getAvailabilityById(id);
-        existingAvailability.setDayOfWeek(availability.getDayOfWeek());
-        existingAvailability.setStartTime(availability.getStartTime());
-        existingAvailability.setEndTime(availability.getEndTime());
-        return availabilityDAO.save(existingAvailability);
+    public void updateAvailability(String id, Availability availability) {
+        availabilityDAO.update(id, availability);
     }
 
     @Transactional

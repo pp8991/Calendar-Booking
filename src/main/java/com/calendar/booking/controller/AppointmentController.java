@@ -1,49 +1,62 @@
 package com.calendar.booking.controller;
 
 import com.calendar.booking.data.Appointment;
-import com.calendar.booking.data.Role;
 import com.calendar.booking.service.AppointmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/appointments")
 public class AppointmentController {
 
-    private final AppointmentService appointmentService;
+    @Autowired
+    private AppointmentService appointmentService;
 
-    public AppointmentController(AppointmentService appointmentService) {
-        this.appointmentService = appointmentService;
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<Appointment>> getAppointmentsForOwner(@PathVariable("ownerId") String ownerId) {
+        List<Appointment> appointments = appointmentService.getAppointmentsForOwner(ownerId);
+        if (appointments.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(appointments);
     }
 
-
-    // Get all appointments for an invitee
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Appointment>> getAppointmentsByInviteeId(@PathVariable String inviteeId,
-                                                                        @PathVariable Role role) {
-        return ResponseEntity.ok(appointmentService.getAppointmentsByInviteeId(inviteeId, role));
+    @GetMapping("/owner/{ownerId}/date/{date}")
+    public ResponseEntity<List<Appointment>> getAppointmentsForOwnerByDate(
+            @PathVariable("ownerId") String ownerId,
+            @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<Appointment> appointments = appointmentService.getAppointmentsForOwnerByDate(ownerId, date);
+        if (appointments.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(appointments);
     }
 
-    // Create a new appointment
-    @PostMapping("/invitee/{inviteeId}/time-slot/{timeSlotId}")
-    public ResponseEntity<Appointment> createAppointment(@PathVariable String inviteeId,
-                                                         @PathVariable String timeSlotId,
-                                                         @RequestBody Appointment appointment) {
-        return ResponseEntity.ok(appointmentService.createAppointment(inviteeId, timeSlotId, appointment));
+    @PostMapping("/book")
+    public ResponseEntity<Appointment> bookAppointment(
+            @RequestParam String inviteeId,
+            @RequestParam String timeSlotId) {
+        try {
+            Appointment appointment = appointmentService.bookAppointment(inviteeId, timeSlotId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(appointment);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
-    // Update appointment status
-    @PutMapping("/{id}")
-    public ResponseEntity<Appointment> updateAppointment(@PathVariable Long id, @RequestBody Appointment appointment) {
-        return ResponseEntity.ok(appointmentService.updateAppointment(id, appointment));
-    }
-
-    // Delete an appointment
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
-        appointmentService.deleteAppointment(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/cancel/{appointmentId}")
+    public ResponseEntity<Void> cancelAppointment(@PathVariable("appointmentId") String appointmentId) {
+        try {
+            appointmentService.cancelAppointment(appointmentId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -41,7 +41,18 @@ public class UserService {
         return userDAO.save(existingUser);
     }
 
-    public void deleteUser(String id) {
-        userDAO.deleteById(id);
+
+    public boolean deleteUser(String id) {
+        Optional<User> userOptional = userDAO.findById(id);
+        if (userOptional.isPresent()) {
+            userDAO.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public Optional<User> findById(String userId){
+        return userDAO.findById(userId);
     }
 }
