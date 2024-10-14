@@ -69,7 +69,7 @@ public class AppointmentService {
 
         List<User> newInvitees = inviteeEmails.stream()
                 .map(email -> userService.findOrCreateUserByEmail(email))
-                .collect(Collectors.toList());
+                .toList();
 
         appointment.getInvitees().addAll(newInvitees);
 
