@@ -3,9 +3,8 @@ package com.calendar.booking.impl;
 import com.calendar.booking.dao.UserDAO;
 import com.calendar.booking.data.User;
 import com.calendar.booking.repository.UserRepository;
-import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,8 +18,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Autowired
     private UserRepository userRepository;
-
-    @PersistenceContext
+    @Autowired
     private EntityManager entityManager;
 
     @Override
@@ -35,16 +33,24 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public User save(User user) {
-        if (StringUtils.isBlank(user.getId())) {
-            entityManager.persist(user);
-            return user;
-        } else {
-            return entityManager.merge(user);
-        }
+        return userRepository.save(user);
     }
 
     @Override
     public void deleteById(String id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        String jpql = "SELECT u FROM User u WHERE u.email = :email";
+        TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
+        query.setParameter("email", email);
+        List<User> users = query.getResultList();
+        if (users.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(users.getFirst());
+        }
     }
 }

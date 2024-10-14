@@ -1,7 +1,9 @@
 package com.calendar.booking.service;
 
-import com.calendar.booking.dao.UserDAO;
 import com.calendar.booking.data.User;
+import com.calendar.booking.impl.UserDAOImpl;
+import com.calendar.booking.util.AppUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,8 +13,10 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private static final String DEFAULT_PASSWORD = "";
+
     @Autowired
-    private UserDAO userDAO;
+    private UserDAOImpl userDAO;
 
     public List<User> getAllUsers() {
         return userDAO.findAll();
@@ -54,5 +58,20 @@ public class UserService {
 
     public Optional<User> findById(String userId){
         return userDAO.findById(userId);
+    }
+
+    @Transactional
+    public User findOrCreateUserByEmail(String email) {
+        Optional<User> existingUser = userDAO.findByEmail(email);
+
+        if (existingUser.isPresent()) {
+            return existingUser.get();
+        } else {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setUsername(email);
+            newUser.setPassword(AppUtil.getCustomDefaultPassword(email));
+            return userDAO.save(newUser);
+        }
     }
 }

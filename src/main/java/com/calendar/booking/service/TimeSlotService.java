@@ -64,7 +64,6 @@ public class TimeSlotService {
         while (currentSlotStart.toLocalTime().isBefore(endTime)) {
             LocalDateTime currentSlotEnd = currentSlotStart.plusHours(1);
             TimeSlot slot = new TimeSlot();
-            slot.setOwner(new User());
             slot.setStartTime(currentSlotStart);
             slot.setEndTime(currentSlotEnd);
             slots.add(slot);

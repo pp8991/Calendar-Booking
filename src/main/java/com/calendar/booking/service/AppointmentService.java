@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {
@@ -35,41 +37,60 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Appointment bookAppointment(String inviteeId, String timeSlotId) {
-        Optional<TimeSlot> timeSlot1 = timeSlotService.findTimeSlotById(timeSlotId);
-        if (!timeSlot1.isPresent()) throw new RuntimeException("Invalid Time Slot Id");
-        TimeSlot timeSlot = timeSlot1.get();
+    public Appointment createAppointment(String ownerEmail, String timeSlotId, List<String> inviteeEmails) {
+        TimeSlot timeSlot = timeSlotService.findTimeSlotById(timeSlotId)
+                .orElseThrow(() -> new RuntimeException("Invalid Time Slot Id"));
         if (timeSlot.isBooked()) {
             throw new RuntimeException("Time slot is not available.");
         }
 
         timeSlotService.markTimeSlotAsBooked(timeSlotId);
+        User owner = userService.findOrCreateUserByEmail(ownerEmail);
 
-        Optional<User> invitee = userService.findById(inviteeId);
-        if (!invitee.isPresent()) {
-            throw new RuntimeException("Invitee not found.");
-        }
-
-        // Create and save the appointment
         Appointment appointment = new Appointment();
-        appointment.setInvitee(invitee.get());
+        appointment.setOwner(owner);
         appointment.setTimeSlot(timeSlot);
-        appointment.setCreatedAt(LocalDate.now().atStartOfDay());
+        appointment.setCreatedAt(LocalDateTime.now());
+
+        List<User> invitees = inviteeEmails.stream()
+                .map(email -> userService.findOrCreateUserByEmail(email))
+                .collect(Collectors.toList());
+
+        appointment.setInvitees(invitees);
+        appointment.setStatus("Scheduled");
+
         return appointmentDAO.save(appointment);
     }
 
     @Transactional
-    public void cancelAppointment(String appointmentId) {
-        Optional<Appointment> appointment = appointmentDAO.findById(appointmentId);
-        if (!appointment.isPresent()) {
-            throw new RuntimeException("Appointment not found.");
-        }
+    public void addInviteesToAppointment(String appointmentId, List<String> inviteeEmails) {
+        Appointment appointment = appointmentDAO.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found."));
 
-        // Free the associated time slot
-        TimeSlot timeSlot = appointment.get().getTimeSlot();
+        List<User> newInvitees = inviteeEmails.stream()
+                .map(email -> userService.findOrCreateUserByEmail(email))
+                .collect(Collectors.toList());
+
+        appointment.getInvitees().addAll(newInvitees);
+
+        appointmentDAO.save(appointment);
+    }
+
+    @Transactional
+    public void cancelAppointment(String appointmentId) {
+        Appointment appointment = appointmentDAO.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found."));
+
+        TimeSlot timeSlot = appointment.getTimeSlot();
         timeSlotService.unmarkTimeSlotAsBooked(timeSlot.getId());
 
-        // Delete the appointment
-        appointmentDAO.deleteById(appointmentId);
+        appointment.setStatus("Canceled");
+        appointment.setCanceledAt(LocalDateTime.now());
+
+        appointmentDAO.save(appointment);
+    }
+
+    public Optional<Appointment> findById(String appointmentId) {
+        return appointmentDAO.findById(appointmentId);
     }
 }

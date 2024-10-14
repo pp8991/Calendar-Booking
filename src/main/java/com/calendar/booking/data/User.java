@@ -12,6 +12,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private String id;
 
     @Column(name = "username", nullable = false, length = 50, unique = true)
@@ -31,8 +32,4 @@ public class User {
 
     @Column(name = "mobile", length = 50)
     private String mobile;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private Role role;
 }

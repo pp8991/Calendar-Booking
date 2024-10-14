@@ -14,11 +14,8 @@ public class TimeSlot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private String id;
-
-    @ManyToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
-    private User owner; // The User's ID is a String, so reference it correctly
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;

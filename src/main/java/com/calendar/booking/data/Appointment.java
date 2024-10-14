@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "appointments")
@@ -14,6 +15,7 @@ public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private String id;
 
     @ManyToOne
@@ -21,8 +23,16 @@ public class Appointment {
     private TimeSlot timeSlot;
 
     @ManyToOne
-    @JoinColumn(name = "invitee_id", nullable = false)
-    private User invitee;
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @ManyToMany
+    @JoinTable(
+            name = "appointment_invitees",
+            joinColumns = @JoinColumn(name = "appointment_id"),
+            inverseJoinColumns = @JoinColumn(name = "invitee_id")
+    )
+    private List<User> invitees;
 
     @Column(name = "status", nullable = false, length = 20)
     private String status;
