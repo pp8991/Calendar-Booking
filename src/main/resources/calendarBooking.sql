@@ -30,11 +30,10 @@ CREATE TABLE IF NOT EXISTS `appointments` (
     FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Join table for appointment invitees
 CREATE TABLE IF NOT EXISTS `appointment_invitees` (
     `appointment_id` VARCHAR(255) NOT NULL,
     `invitee_id` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`appointment_id`, `invitee_id`),  -- Composite primary key
+    PRIMARY KEY (`appointment_id`, `invitee_id`),
     FOREIGN KEY (`appointment_id`) REFERENCES `appointments`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`invitee_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
