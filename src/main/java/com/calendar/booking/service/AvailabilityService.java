@@ -6,8 +6,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AvailabilityService {
@@ -15,16 +15,8 @@ public class AvailabilityService {
     @Autowired
     private AvailabilityDAOImpl availabilityDAO;
 
-    public List<Availability> getAllAvailabilities() {
-        return availabilityDAO.findAll();
-    }
-
-    public Optional<Availability> getAvailabilityById(String id) {
-        return availabilityDAO.findById(id);
-    }
-
-    public List<Availability> getAllAvailabilitiesForOwner(String ownerId) {
-        return availabilityDAO.findByOwnerId(ownerId);
+    public List<Availability> getAllAvailabilitiesForOwner(String ownerId, LocalDate date) {
+        return availabilityDAO.findByOwnerIdAndDate(ownerId, date);
     }
 
     @Transactional
@@ -35,6 +27,7 @@ public class AvailabilityService {
 
     @Transactional
     public void updateAvailability(String id, Availability availability) {
+        validateAvailability(availability);
         availabilityDAO.update(id, availability);
     }
 

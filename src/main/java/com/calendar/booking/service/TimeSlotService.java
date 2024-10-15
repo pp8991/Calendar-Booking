@@ -1,21 +1,19 @@
 package com.calendar.booking.service;
 
-import com.calendar.booking.data.Appointment;
-import com.calendar.booking.data.Availability;
-import com.calendar.booking.data.TimeSlot;
-import com.calendar.booking.data.User;
+import com.calendar.booking.data.*;
 import com.calendar.booking.impl.AppointmentDAOImpl;
 import com.calendar.booking.impl.TimeSlotDAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TimeSlotService {
@@ -29,76 +27,97 @@ public class TimeSlotService {
     @Autowired
     private AppointmentDAOImpl appointmentDAO;
 
+    @Autowired
+    private UserService userService;
+
     @Transactional
-    public List<TimeSlot> getAvailableTimeSlots(String ownerId, LocalDateTime date) {
-        List<Availability> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerId);
+    public List<TimeSlotResponse> getAvailableTimeSlots(String ownerEmail, LocalDate date) {
+        User owner = userService.findOrCreateUserByEmail(ownerEmail);
+        List<Availability> availabilities = availabilityService.getAllAvailabilitiesForOwner(owner.getId(), date);
 
-        List<TimeSlot> timeSlots = generateTimeSlots(availabilities, date);
+        List<TimeSlot> timeSlots = availabilities.isEmpty() ? generateDefaultTimeSlots(date) : generateTimeSlots(availabilities, date);
 
-        // Filter out booked time slots
-        List<Appointment> appointments = appointmentDAO.findByOwnerIdAndDate(ownerId, date.toLocalDate());
+        List<Appointment> appointments = appointmentDAO.findByOwnerIdAndDate(owner.getId(), date);
         List<TimeSlot> bookedSlots = appointments.stream()
                 .map(Appointment::getTimeSlot)
-                .collect(Collectors.toList());
+                .toList();
 
         return timeSlots.stream()
                 .filter(slot -> !bookedSlots.contains(slot))
-                .collect(Collectors.toList());
+                .map(slot -> new TimeSlotResponse(slot.getStartTime(), slot.getEndTime(), slot.isBooked()))
+                .toList();
     }
 
-    private List<TimeSlot> generateTimeSlots(List<Availability> availabilities, LocalDateTime date) {
-        // Generate time slots based on availability and interval rules (e.g., 60-minute intervals)
+    private List<TimeSlot> generateDefaultTimeSlots(LocalDate date) {
+        List<TimeSlot> defaultSlots = new ArrayList<>();
+        LocalDateTime startTime = date.atTime(9, 0);
+        LocalDateTime endTime = date.atTime(17, 0);
+
+        while (startTime.isBefore(endTime)) {
+            TimeSlot slot = new TimeSlot();
+            slot.setStartTime(startTime);
+            slot.setEndTime(startTime.plusHours(1));
+            defaultSlots.add(slot);
+            startTime = startTime.plusHours(1);
+        }
+
+        return defaultSlots;
+    }
+
+    private List<TimeSlot> generateTimeSlots(List<Availability> availabilities, LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
         return availabilities.stream()
-                .filter(availability -> availability.getDayOfWeek().equals(date.getDayOfWeek().name()))
+                .filter(availability -> availability.getDayOfWeek().equals(dayOfWeek))
                 .flatMap(availability -> {
                     LocalTime startTime = LocalTime.from(availability.getStartTime());
                     LocalTime endTime = LocalTime.from(availability.getEndTime());
                     return generateSlotsForDay(startTime, endTime, date).stream();
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    private List<TimeSlot> generateSlotsForDay(LocalTime startTime, LocalTime endTime, LocalDateTime date) {
+
+    private List<TimeSlot> generateSlotsForDay(LocalTime startTime, LocalTime endTime, LocalDate date) {
         List<TimeSlot> slots = new ArrayList<>();
-        LocalDateTime currentSlotStart = date.with(startTime);
+        LocalDateTime currentSlotStart = date.atTime(startTime);
         while (currentSlotStart.toLocalTime().isBefore(endTime)) {
-            LocalDateTime currentSlotEnd = currentSlotStart.plusHours(1);
             TimeSlot slot = new TimeSlot();
             slot.setStartTime(currentSlotStart);
-            slot.setEndTime(currentSlotEnd);
+            slot.setEndTime(currentSlotStart.plusHours(1));
             slots.add(slot);
-            currentSlotStart = currentSlotEnd;
+            currentSlotStart = currentSlotStart.plusHours(1);
         }
         return slots;
     }
 
     @Transactional
-    public TimeSlot createTimeSlot(TimeSlot timeSlot) {
+    public TimeSlot createTimeSlot(TimeSlotResponse timeSlotResponse) {
+        TimeSlot timeSlot = new TimeSlot();
+        timeSlot.setBooked(timeSlotResponse.isBooked());
+        timeSlot.setStartTime(timeSlotResponse.getStartTime());
+        timeSlot.setEndTime(timeSlotResponse.getEndTime());
         return timeSlotDAO.save(timeSlot);
     }
 
     @Transactional
     public void markTimeSlotAsBooked(String timeSlotId) {
-        Optional<TimeSlot> timeSlot = timeSlotDAO.findById(timeSlotId);
-        if (!timeSlot.isPresent()) {
-            throw new RuntimeException("Time slot not found");
-        }
-        timeSlot.get().setBooked(true);
-        timeSlotDAO.save(timeSlot.get());
+        TimeSlot timeSlot = timeSlotDAO.findById(timeSlotId).orElseThrow(() -> new RuntimeException("Time slot not found"));
+        timeSlot.setBooked(true);
+        timeSlotDAO.save(timeSlot);
     }
-
 
     public Optional<TimeSlot> findTimeSlotById(String timeSlotId) {
         return timeSlotDAO.findById(timeSlotId);
     }
 
+    @Transactional
     public void unmarkTimeSlotAsBooked(String id) {
-        Optional<TimeSlot> timeSlot = timeSlotDAO.findById(id);
-        if (timeSlot.isPresent() && timeSlot.get().isBooked()) {
-            timeSlot.get().setBooked(false);
-            timeSlotDAO.save(timeSlot.get());
+        TimeSlot timeSlot = timeSlotDAO.findById(id).orElseThrow(() -> new RuntimeException("TimeSlot not found or is not booked"));
+        if (timeSlot.isBooked()) {
+            timeSlot.setBooked(false);
+            timeSlotDAO.save(timeSlot);
         } else {
-            throw new RuntimeException("TimeSlot not found or is not booked");
+            throw new RuntimeException("TimeSlot is not booked");
         }
     }
 }

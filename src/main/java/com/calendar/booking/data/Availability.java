@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -32,7 +33,4 @@ public class Availability {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
-    public enum DayOfWeek {
-        Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-    }
 }

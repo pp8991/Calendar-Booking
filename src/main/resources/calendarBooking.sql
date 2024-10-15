@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS `time_slots` (
     `id` VARCHAR(255) NOT NULL PRIMARY KEY,
     `start_time` DATETIME NOT NULL,
     `end_time` DATETIME NOT NULL,
-    `is_booked` BOOLEAN DEFAULT FALSE
+    `is_booked` BOOLEAN DEFAULT FALSE,
+    `owner_id` VARCHAR(255) NOT NULL,
+    FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `appointments` (
@@ -40,8 +42,9 @@ CREATE TABLE IF NOT EXISTS `appointment_invitees` (
 CREATE TABLE IF NOT EXISTS `availability` (
     `id` VARCHAR(255) NOT NULL PRIMARY KEY,
     `owner_id` VARCHAR(255) NOT NULL,
-    `day_of_week` ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
+    `day_of_week` ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY') NOT NULL,
     `start_time` TIME NOT NULL,
     `end_time` TIME NOT NULL,
     FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

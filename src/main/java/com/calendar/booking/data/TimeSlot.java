@@ -25,5 +25,9 @@ public class TimeSlot {
 
     @Column(name = "is_booked", nullable = false)
     private boolean isBooked = false;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 }
 
