@@ -1,4 +1,4 @@
-package com.calendar.booking.controller;
+package com.calendar.booking.controller.admin;
 
 import com.calendar.booking.data.Availability;
 import com.calendar.booking.service.AvailabilityService;

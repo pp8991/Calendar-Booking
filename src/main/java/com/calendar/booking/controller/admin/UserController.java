@@ -1,6 +1,7 @@
-package com.calendar.booking.controller;
+package com.calendar.booking.controller.admin;
 
 import com.calendar.booking.data.User;
+import com.calendar.booking.data.UserRequest;
 import com.calendar.booking.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,14 +32,14 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
+    public ResponseEntity<User> createUser(@RequestBody UserRequest userRequest) {
+        User createdUser = userService.createUser(userRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") String id, @RequestBody User userDetails) {
-        User updatedUser = userService.updateUser(id, userDetails);
+    public ResponseEntity<User> updateUser(@PathVariable("id") String id, @RequestBody UserRequest userRequest) {
+        User updatedUser = userService.updateUser(id, userRequest);
         if (updatedUser == null) {
             return ResponseEntity.notFound().build();
         }

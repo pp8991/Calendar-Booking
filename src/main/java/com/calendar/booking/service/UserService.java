@@ -1,8 +1,12 @@
 package com.calendar.booking.service;
 
 import com.calendar.booking.data.User;
+import com.calendar.booking.data.UserRequest;
+import com.calendar.booking.exceptions.UserAlreadyExistsException;
 import com.calendar.booking.impl.UserDAOImpl;
 import com.calendar.booking.util.AppUtil;
+import io.micrometer.common.util.StringUtils;
+import io.netty.util.internal.StringUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,18 +34,34 @@ public class UserService {
         return user.get();
     }
 
-    public User createUser(User user) {
-        if (userDAO.findAll().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()))) {
-            throw new RuntimeException("User with this email already exists");
+    public User createUser(UserRequest userRequest) {
+        if (userDAO.findAll().stream().anyMatch(u -> u.getEmail().equals(userRequest.getEmail()))) {
+            throw new UserAlreadyExistsException("User with this email already exists");
         }
+        User user = new User();
+        user.setEmail(userRequest.getEmail());
+        user.setUsername(userRequest.getUserName());
+        user.setPassword(userRequest.getPassword());
+        user.setFirstName(userRequest.getFirstName());
+        user.setLastName(userRequest.getLastName());
+        user.setMobile(userRequest.getMobile());
         return userDAO.save(user);
     }
 
-    public User updateUser(String id, User user) {
+    public User updateUser(String id, UserRequest userRequest) {
         User existingUser = getUserById(id);
-        existingUser.setFirstName(user.getFirstName());
-        existingUser.setLastName(user.getLastName());
-        existingUser.setMobile(user.getMobile());
+        if(!StringUtils.isBlank(userRequest.getFirstName())){
+            existingUser.setFirstName(userRequest.getFirstName());
+        }
+        if(!StringUtils.isBlank(userRequest.getLastName())){
+            existingUser.setLastName(userRequest.getLastName());
+        }
+        if(!StringUtils.isBlank(userRequest.getMobile())){
+            existingUser.setMobile(userRequest.getMobile());
+        }
+        if(!StringUtils.isBlank(userRequest.getPassword())){
+            existingUser.setPassword(userRequest.getPassword());
+        }
         return userDAO.save(existingUser);
     }
 

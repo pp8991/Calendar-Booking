@@ -1,11 +1,9 @@
-package com.calendar.booking.controller;
+package com.calendar.booking.controller.admin;
 
 import com.calendar.booking.data.Appointment;
-import com.calendar.booking.data.User;
 import com.calendar.booking.service.AppointmentService;
 import com.calendar.booking.service.TimeSlotService;
 import com.calendar.booking.service.UserService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/appointments")

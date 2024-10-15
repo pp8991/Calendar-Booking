@@ -80,13 +80,10 @@ public class AppointmentService {
     public void cancelAppointment(String appointmentId) {
         Appointment appointment = appointmentDAO.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found."));
-
         TimeSlot timeSlot = appointment.getTimeSlot();
         timeSlotService.unmarkTimeSlotAsBooked(timeSlot.getId());
-
         appointment.setStatus("Canceled");
         appointment.setCanceledAt(LocalDateTime.now());
-
         appointmentDAO.save(appointment);
     }
 

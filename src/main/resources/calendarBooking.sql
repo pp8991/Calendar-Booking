@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
    first_name VARCHAR(50),
    last_name VARCHAR(50),
    email VARCHAR(50),
-   mobile VARCHAR(50),
-   role ENUM('CALENDAR_OWNER', 'INVITEE')
+   mobile VARCHAR(50)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `time_slots` (
