@@ -11,9 +11,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TimeSlotService {
@@ -33,7 +31,7 @@ public class TimeSlotService {
     @Transactional
     public List<TimeSlotResponse> getAvailableTimeSlots(String ownerEmail, LocalDate date) {
         User owner = userService.findOrCreateUserByEmail(ownerEmail);
-        List<Availability> availabilities = availabilityService.getAllAvailabilitiesForOwner(owner.getId(), date);
+        List<Availability> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
 
         List<TimeSlot> timeSlots = availabilities.isEmpty() ? generateDefaultTimeSlots(date) : generateTimeSlots(availabilities, date);
 
@@ -42,8 +40,9 @@ public class TimeSlotService {
                 .map(Appointment::getTimeSlot)
                 .toList();
 
+        Set<TimeSlot> bookedSlotsSet = new HashSet<>(bookedSlots);
+        timeSlots.forEach(slot -> slot.setBooked(bookedSlotsSet.contains(slot)));
         return timeSlots.stream()
-                .filter(slot -> !bookedSlots.contains(slot))
                 .map(slot -> new TimeSlotResponse(slot.getStartTime(), slot.getEndTime(), slot.isBooked()))
                 .toList();
     }
