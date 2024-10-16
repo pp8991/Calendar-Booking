@@ -1,5 +1,6 @@
 package com.calendar.booking.controller.advice;
 
+import com.calendar.booking.exceptions.OverlappingAvailabilityException;
 import com.calendar.booking.exceptions.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(OverlappingAvailabilityException.class)
+    public ResponseEntity<String> handleOverlappingAvailabilityException(OverlappingAvailabilityException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
