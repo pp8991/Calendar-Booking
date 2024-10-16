@@ -41,8 +41,12 @@ public class AppointmentController {
 
 
     @PostMapping("/book")
-    public ResponseEntity<Appointment> bookAppointment(@RequestParam String ownerEmail, @RequestParam String timeSlotId, @RequestBody List<String> inviteeEmails) {
-        Appointment appointment = appointmentService.createAppointment(ownerEmail, timeSlotId, inviteeEmails);
+    public ResponseEntity<Appointment> bookAppointment(@RequestParam String ownerEmail,
+                                                       @RequestParam String startTime,
+                                                       @RequestParam String endTime,
+                                                       @RequestBody List<String> inviteeEmails,
+                                                       @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+        Appointment appointment = appointmentService.createAppointment(ownerEmail, startTime, endTime, inviteeEmails, date);
         return new ResponseEntity<>(appointment, HttpStatus.CREATED);
     }
 

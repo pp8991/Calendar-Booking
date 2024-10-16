@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,5 +44,31 @@ public class TimeSlotDAOImpl implements TimeSlotDAO {
     @Override
     public void deleteById(String id) {
        timeSlotRepository.deleteById(id);
+    }
+
+    @Override
+    public TimeSlot findByOwnerIdAndStartTimeAndEndTime(String ownerId, LocalDateTime startTime, LocalDateTime endTime) {
+        TypedQuery<TimeSlot> query = entityManager.createQuery(
+                "SELECT t FROM TimeSlot t WHERE t.owner.id = :ownerId AND t.startTime = :startTime AND t.endTime = :endTime",
+                TimeSlot.class);
+        query.setParameter("ownerId", ownerId);
+        query.setParameter("startTime", startTime);
+        query.setParameter("endTime", endTime);
+        List<TimeSlot> result = query.getResultList();
+        return result.isEmpty() ? null : result.getFirst();
+    }
+
+    @Override
+    public List<TimeSlot> findByOwnerIdAndDate(String ownerId, LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        TypedQuery<TimeSlot> query = entityManager.createQuery(
+                "SELECT ts FROM TimeSlot ts WHERE ts.owner.id = :ownerId AND ts.startTime BETWEEN :startOfDay AND :endOfDay",
+                TimeSlot.class);
+        query.setParameter("ownerId", ownerId);
+        query.setParameter("startOfDay", startOfDay);
+        query.setParameter("endOfDay", endOfDay);
+
+        return query.getResultList();
     }
 }

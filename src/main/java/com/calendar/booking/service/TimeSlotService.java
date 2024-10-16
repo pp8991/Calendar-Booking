@@ -1,7 +1,9 @@
 package com.calendar.booking.service;
 
-import com.calendar.booking.data.*;
-import com.calendar.booking.impl.AppointmentDAOImpl;
+import com.calendar.booking.data.AvailabilityRequest;
+import com.calendar.booking.data.TimeSlot;
+import com.calendar.booking.data.TimeSlotResponse;
+import com.calendar.booking.data.User;
 import com.calendar.booking.impl.TimeSlotDAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +14,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TimeSlotService {
@@ -24,27 +28,28 @@ public class TimeSlotService {
     private AvailabilityService availabilityService;
 
     @Autowired
-    private AppointmentDAOImpl appointmentDAO;
-
-    @Autowired
     private UserService userService;
+
+    @Transactional
+    public void saveTimeSlot(TimeSlot timeSlot){
+        timeSlotDAO.save(timeSlot);
+    }
 
     @Transactional
     public List<TimeSlotResponse> getAvailableTimeSlots(String ownerEmail, LocalDate date) {
         User owner = userService.findOrCreateUserByEmail(ownerEmail);
         List<AvailabilityRequest> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
-
         List<TimeSlot> timeSlots = availabilities.isEmpty() ? generateDefaultTimeSlots(date) : generateTimeSlots(availabilities, date);
 
-        List<Appointment> appointments = appointmentDAO.findByOwnerIdAndDate(owner.getId(), date);
-        List<TimeSlot> bookedSlots = appointments.stream()
-                .map(Appointment::getTimeSlot)
+        List<TimeSlot> bookedSlots = timeSlotDAO.findByOwnerIdAndDate(owner.getId(), date).stream()
+                .filter(TimeSlot::isBooked)
                 .toList();
 
-        Set<TimeSlot> bookedSlotsSet = new HashSet<>(bookedSlots);
-        timeSlots.forEach(slot -> slot.setBooked(bookedSlotsSet.contains(slot)));
         return timeSlots.stream()
-                .map(slot -> new TimeSlotResponse(slot.getStartTime(), slot.getEndTime(), slot.isBooked()))
+                .filter(slot -> bookedSlots.stream().noneMatch(booked ->
+                        (booked.getStartTime().isBefore(slot.getEndTime()) && booked.getEndTime().isAfter(slot.getStartTime()))
+                ))
+                .map(slot -> new TimeSlotResponse(slot.getStartTime(), slot.getEndTime(), false))
                 .toList();
     }
 
@@ -119,6 +124,10 @@ public class TimeSlotService {
         } else {
             throw new RuntimeException("TimeSlot is not booked");
         }
+    }
+
+    public TimeSlot findByOwnerAndTimeRange(String ownerId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return timeSlotDAO.findByOwnerIdAndStartTimeAndEndTime(ownerId, startDateTime, endDateTime);
     }
 }
 

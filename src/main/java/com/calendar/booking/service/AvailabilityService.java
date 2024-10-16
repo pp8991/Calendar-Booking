@@ -24,6 +24,11 @@ public class AvailabilityService {
     @Autowired
     private UserService userService;
 
+    @Transactional
+    public void saveAvailability(Availability availability){
+        availabilityDAO.save(availability);
+    }
+
     public List<AvailabilityRequest> getAllAvailabilitiesForOwner(String ownerEmail, LocalDate date) {
         User owner = userService.findOrCreateUserByEmail(ownerEmail);
         List<Availability> availabilities = availabilityDAO.findByOwnerIdAndDate(owner.getId(), date);
@@ -35,6 +40,11 @@ public class AvailabilityService {
                         availability.getEndTime().toString()
                 ))
                 .toList();
+    }
+
+    public List<Availability> getOwnerAvailabilityOnDate(String ownerEmail, LocalDate date){
+        User owner = userService.findOrCreateUserByEmail(ownerEmail);
+        return availabilityDAO.findByOwnerIdAndDate(owner.getId(), date);
     }
 
     @Transactional
