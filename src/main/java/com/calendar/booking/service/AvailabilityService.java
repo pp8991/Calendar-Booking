@@ -24,9 +24,17 @@ public class AvailabilityService {
     @Autowired
     private UserService userService;
 
-    public List<Availability> getAllAvailabilitiesForOwner(String ownerEmail, LocalDate date) {
+    public List<AvailabilityRequest> getAllAvailabilitiesForOwner(String ownerEmail, LocalDate date) {
         User owner = userService.findOrCreateUserByEmail(ownerEmail);
-        return availabilityDAO.findByOwnerIdAndDate(owner.getId(), date);
+        List<Availability> availabilities = availabilityDAO.findByOwnerIdAndDate(owner.getId(), date);
+        return availabilities.stream()
+                .map(availability -> new AvailabilityRequest(
+                        availability.getOwner().getEmail(),
+                        availability.getDayOfWeek().toString(),
+                        availability.getStartTime().toString(),
+                        availability.getEndTime().toString()
+                ))
+                .toList();
     }
 
     @Transactional
@@ -34,7 +42,7 @@ public class AvailabilityService {
         User owner = userService.findOrCreateUserByEmail(request.getOwnerEmail());
         DayOfWeek dayOfWeek = DayOfWeek.valueOf(request.getDayOfWeek().toUpperCase());
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("[hh:mm a][HH:mm]");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("[HH:mm]");
         LocalTime startTime = LocalTime.parse(request.getStartTime(), timeFormatter);
         LocalTime endTime = LocalTime.parse(request.getEndTime(), timeFormatter);
 
@@ -44,7 +52,7 @@ public class AvailabilityService {
         availability.setStartTime(startTime);
         availability.setEndTime(endTime);
 
-        validateAndCombineAvailability(availability);
+        validateAvailability(availability);
     }
 
     @Transactional
@@ -87,7 +95,7 @@ public class AvailabilityService {
         availabilityDAO.deleteById(id);
     }
 
-    private void validateAndCombineAvailability(Availability newAvailability) {
+    private void validateAvailability(Availability newAvailability) {
         List<Availability> existingAvailabilities = availabilityDAO.findByOwnerId(newAvailability.getOwner().getId());
 
         for (Availability availability : existingAvailabilities) {

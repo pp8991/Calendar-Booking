@@ -21,9 +21,9 @@ public class AvailabilityController {
     private AvailabilityService availabilityService;
 
     @GetMapping("/owner/{ownerEmail}")
-    public ResponseEntity<List<Availability>> getAvailabilitiesForOwner(@PathVariable("ownerEmail") String ownerEmail,
+    public ResponseEntity<List<AvailabilityRequest>> getAvailabilitiesForOwner(@PathVariable("ownerEmail") String ownerEmail,
                                                                         @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
-        List<Availability> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
+        List<AvailabilityRequest> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
         if (availabilities.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -32,12 +32,8 @@ public class AvailabilityController {
 
     @PostMapping("/create")
     public ResponseEntity<Availability> createAvailability(@RequestBody AvailabilityRequest availabilityRequest) {
-        try {
-            availabilityService.createAvailability(availabilityRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        availabilityService.createAvailability(availabilityRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/update")

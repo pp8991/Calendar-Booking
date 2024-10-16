@@ -11,6 +11,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -31,7 +32,7 @@ public class TimeSlotService {
     @Transactional
     public List<TimeSlotResponse> getAvailableTimeSlots(String ownerEmail, LocalDate date) {
         User owner = userService.findOrCreateUserByEmail(ownerEmail);
-        List<Availability> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
+        List<AvailabilityRequest> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
 
         List<TimeSlot> timeSlots = availabilities.isEmpty() ? generateDefaultTimeSlots(date) : generateTimeSlots(availabilities, date);
 
@@ -63,13 +64,13 @@ public class TimeSlotService {
         return defaultSlots;
     }
 
-    private List<TimeSlot> generateTimeSlots(List<Availability> availabilities, LocalDate date) {
+    private List<TimeSlot> generateTimeSlots(List<AvailabilityRequest> availabilities, LocalDate date) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
         return availabilities.stream()
-                .filter(availability -> availability.getDayOfWeek().equals(dayOfWeek))
+                .filter(availability -> availability.getDayOfWeek().equals(dayOfWeek.toString()))
                 .flatMap(availability -> {
-                    LocalTime startTime = LocalTime.from(availability.getStartTime());
-                    LocalTime endTime = LocalTime.from(availability.getEndTime());
+                    LocalTime startTime = LocalTime.parse(availability.getStartTime(), DateTimeFormatter.ofPattern("HH:mm"));
+                    LocalTime endTime = LocalTime.parse(availability.getEndTime(), DateTimeFormatter.ofPattern("HH:mm"));
                     return generateSlotsForDay(startTime, endTime, date).stream();
                 })
                 .toList();
