@@ -21,12 +21,10 @@ public class AvailabilityController {
     private AvailabilityService availabilityService;
 
     @GetMapping("/owner/{ownerEmail}")
-    public ResponseEntity<List<AvailabilityRequest>> getAvailabilitiesForOwner(@PathVariable("ownerEmail") String ownerEmail,
-                                                                        @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
+    public ResponseEntity<List<AvailabilityRequest>> getAvailabilitiesForOwner(
+            @PathVariable("ownerEmail") String ownerEmail,
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate date) {
         List<AvailabilityRequest> availabilities = availabilityService.getAllAvailabilitiesForOwner(ownerEmail, date);
-        if (availabilities.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
         return ResponseEntity.ok(availabilities);
     }
 
