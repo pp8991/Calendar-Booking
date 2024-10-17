@@ -30,13 +30,13 @@ This is a **Calendar Booking System** built with Java 21, Spring Boot, and MySQL
 ## Design Patterns & Architecture
 
 1. **Service Layer Design Pattern**  
-   The project separates business logic into services like `TimeSlotService`, `AvailabilityService`, and `AppointmentService`. This keeps controllers lightweight and focused on handling HTTP requests and responses.
+   The project separates business logic into services like `TimeSlotService`, `AvailabilityService`, `UserService`, and `AppointmentService`. This keeps controllers lightweight and focused on handling HTTP requests and responses.
 
 2. **Global Exception Handling**  
    `@ControllerAdvice` is used to handle exceptions across all controllers. This improves maintainability by centralizing exception handling and sending meaningful error messages to the client.
 
 3. **Dynamic Slot Creation**  
-   Instead of saving each time slot in the database, the system dynamically generates slots based on the owner's availability. This is more efficient for large-scale usage.
+   Instead of saving each time slot in the database, the system dynamically generates slots based on the owner's availability. This is more efficient for large-scale usage. The time_slot is only saved for the slots where the Appointment is done
 
 4. **Validation Pattern**  
    Custom validation ensures no overlapping time slots when setting availability, ensuring consistency in the booking process.
