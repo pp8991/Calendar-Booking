@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.calendar.booking.constants.Keys.TIME_SLOT_DURATIONS;
+
 @Service
 public class TimeSlotService {
 
@@ -61,9 +63,9 @@ public class TimeSlotService {
         while (startTime.isBefore(endTime)) {
             TimeSlot slot = new TimeSlot();
             slot.setStartTime(startTime);
-            slot.setEndTime(startTime.plusHours(1));
+            slot.setEndTime(startTime.plusHours(TIME_SLOT_DURATIONS));
             defaultSlots.add(slot);
-            startTime = startTime.plusHours(1);
+            startTime = startTime.plusHours(TIME_SLOT_DURATIONS);
         }
 
         return defaultSlots;

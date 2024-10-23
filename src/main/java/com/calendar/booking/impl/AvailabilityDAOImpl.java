@@ -46,7 +46,7 @@ import java.util.Optional;
         }
 
         @Override
-        public List<Availability> findByOwnerIdAndDate(String ownerId, LocalDate date) {
+        public List<Availability>  findByOwnerIdAndDate(String ownerId, LocalDate date) {
             DayOfWeek dayOfWeek = date.getDayOfWeek();
             return entityManager.createQuery(
                             "SELECT a FROM Availability a WHERE a.owner.id = :ownerId AND a.dayOfWeek = :dayOfWeek",
