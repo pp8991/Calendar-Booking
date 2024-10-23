@@ -1,6 +1,9 @@
 package com.calendar.booking.service;
 
-import com.calendar.booking.data.*;
+import com.calendar.booking.data.Appointment;
+import com.calendar.booking.data.Availability;
+import com.calendar.booking.data.TimeSlot;
+import com.calendar.booking.data.User;
 import com.calendar.booking.impl.AppointmentDAOImpl;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {

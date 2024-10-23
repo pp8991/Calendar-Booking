@@ -31,8 +31,8 @@ public class TimeSlotService {
     private UserService userService;
 
     @Transactional
-    public void saveTimeSlot(TimeSlot timeSlot){
-        timeSlotDAO.save(timeSlot);
+    public TimeSlot saveTimeSlot(TimeSlot timeSlot){
+        return timeSlotDAO.save(timeSlot);
     }
 
     @Transactional
