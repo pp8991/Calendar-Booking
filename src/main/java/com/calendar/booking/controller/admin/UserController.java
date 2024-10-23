@@ -31,6 +31,15 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @GetMapping("/email")
+    public ResponseEntity<User> getUserByEmail(@RequestParam("email") String email) {
+        User user = userService.findOrCreateUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody UserRequest userRequest) {
         User createdUser = userService.createUser(userRequest);
