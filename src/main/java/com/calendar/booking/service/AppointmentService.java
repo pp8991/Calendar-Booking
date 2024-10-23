@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.calendar.booking.constants.Keys.TIME_FORMATTER;
+
 @Service
 public class AppointmentService {
 
@@ -43,9 +45,8 @@ public class AppointmentService {
                                          List<String> inviteeEmails,
                                          LocalDate date) {
         User owner = userService.findOrCreateUserByEmail(ownerEmail);
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime start = LocalTime.parse(startTime, timeFormatter);
-        LocalTime end = LocalTime.parse(endTime, timeFormatter);
+        LocalTime start = LocalTime.parse(startTime, TIME_FORMATTER);
+        LocalTime end = LocalTime.parse(endTime, TIME_FORMATTER);
 
         LocalDateTime startDateTime = date.atTime(start);
         LocalDateTime endDateTime = date.atTime(end);

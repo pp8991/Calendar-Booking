@@ -1,5 +1,6 @@
 package com.calendar.booking.service;
 
+import com.calendar.booking.constants.Keys;
 import com.calendar.booking.data.Availability;
 import com.calendar.booking.data.AvailabilityRequest;
 import com.calendar.booking.data.User;
@@ -15,6 +16,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.calendar.booking.constants.Keys.TIME_FORMATTER;
 
 @Service
 public class AvailabilityService {
@@ -52,9 +55,8 @@ public class AvailabilityService {
         User owner = userService.findOrCreateUserByEmail(request.getOwnerEmail());
         DayOfWeek dayOfWeek = DayOfWeek.valueOf(request.getDayOfWeek().toUpperCase());
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("[HH:mm]");
-        LocalTime startTime = LocalTime.parse(request.getStartTime(), timeFormatter);
-        LocalTime endTime = LocalTime.parse(request.getEndTime(), timeFormatter);
+        LocalTime startTime = LocalTime.parse(request.getStartTime(), TIME_FORMATTER);
+        LocalTime endTime = LocalTime.parse(request.getEndTime(), TIME_FORMATTER);
 
         Availability availability = new Availability();
         availability.setOwner(owner);
@@ -70,9 +72,8 @@ public class AvailabilityService {
         User owner = userService.findOrCreateUserByEmail(request.getOwnerEmail());
         DayOfWeek dayOfWeek = DayOfWeek.valueOf(request.getDayOfWeek().toUpperCase());
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("[hh:mm a][HH:mm]");
-        LocalTime startTime = LocalTime.parse(request.getStartTime(), timeFormatter);
-        LocalTime endTime = LocalTime.parse(request.getEndTime(), timeFormatter);
+        LocalTime startTime = LocalTime.parse(request.getStartTime(), TIME_FORMATTER);
+        LocalTime endTime = LocalTime.parse(request.getEndTime(), TIME_FORMATTER);
 
         Availability newAvailability = new Availability();
         newAvailability.setOwner(owner);

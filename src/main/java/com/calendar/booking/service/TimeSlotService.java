@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.calendar.booking.constants.Keys.TIME_FORMATTER;
 import static com.calendar.booking.constants.Keys.TIME_SLOT_DURATIONS;
 
 @Service
@@ -76,8 +77,8 @@ public class TimeSlotService {
         return availabilities.stream()
                 .filter(availability -> availability.getDayOfWeek().equals(dayOfWeek.toString()))
                 .flatMap(availability -> {
-                    LocalTime startTime = LocalTime.parse(availability.getStartTime(), DateTimeFormatter.ofPattern("HH:mm"));
-                    LocalTime endTime = LocalTime.parse(availability.getEndTime(), DateTimeFormatter.ofPattern("HH:mm"));
+                    LocalTime startTime = LocalTime.parse(availability.getStartTime(), TIME_FORMATTER);
+                    LocalTime endTime = LocalTime.parse(availability.getEndTime(), TIME_FORMATTER);
                     return generateSlotsForDay(startTime, endTime, date).stream();
                 })
                 .toList();
